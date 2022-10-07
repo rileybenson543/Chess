@@ -172,7 +172,7 @@ public:
 						returnVector->emplace_back(x - 1, y + 1);
 					}
 				}
-				if (x - 1 >= 0 && y - 1 >= 0(piecePositions[x - 1][y - 1]->getType() == PieceType::Empty || piecePositions[x - 1][y - 1]->getTeam() == opponent)) {
+				if (x - 1 >= 0 && y - 1 >= 0 && (piecePositions[x - 1][y - 1]->getType() == PieceType::Empty || piecePositions[x - 1][y - 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x - 1, y - 1), opponent) == false) {
 							returnVector->emplace_back(x - 1, y - 1);
