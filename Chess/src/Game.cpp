@@ -215,6 +215,7 @@ public:
 				if (piecePositions[i][j]->getTeam() == team) {
 					std::vector<struct moveOption>* currValidMoves = getValidMoves(piecePositions[i][j], false);
 					allValidMoves->insert(allValidMoves->end(), currValidMoves->begin(), currValidMoves->end());
+					delete currValidMoves;
 				}
 			}
 		}

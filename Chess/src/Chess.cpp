@@ -29,11 +29,12 @@ int main()
 
         int r = (float(rand()) / float(RAND_MAX)) * options->size();
         struct moveOption selected = options->at(r);
-
+        delete options;
 
         g.movePiece(selected.piece, { selected.destX, selected.destY });
         std::cout << g.getLayoutString() << std::endl;
         
+
         t = t * -1;
 
         std::cin.get();

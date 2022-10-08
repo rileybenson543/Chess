@@ -18,7 +18,7 @@ struct enPassant {
 class Piece {
 public:
 	Piece(Teams team, std::tuple<int,int> location);
-	~Piece();
+	virtual ~Piece();
 	std::tuple<int, int> getLocation(); // TODO - change to use location struct
 	void setLocation(int x, int y);
 	virtual PieceType getType();
