@@ -1,4 +1,12 @@
 #pragma once
-#include "Game.cpp"
 
-Game::Game();
+#include "Piece.h"
+
+struct moveOption {
+	Piece* piece;
+	int destX;
+	int destY;
+};
+
+
+//Game::Game();

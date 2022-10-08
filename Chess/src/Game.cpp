@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "Piece.h"
+#include "Game.h"
 
 class Game {
 public:
@@ -12,8 +13,8 @@ public:
 	~Game() {
 		delete[] & piecePositions;
 	}
-	std::vector<struct location>* getValidMoves(Piece* piece, bool directKingCheck = true) {
-		std::vector<struct location>* returnVector = new std::vector<struct location>;
+	std::vector<struct moveOption>* getValidMoves(Piece* piece, bool directKingCheck = true) {
+		std::vector<struct moveOption>* returnVector = new std::vector<struct moveOption>;
 
 		std::tuple<int, int> location = piece->getLocation();
 		int x = std::get<0>(location);
@@ -36,21 +37,21 @@ public:
 
 				if (!p->getHasMoved()) {
 					if (y + 2 <= 7 && piecePositions[x][y + 2]->getType() == PieceType::Empty) {
-						returnVector->emplace_back(x, y + 2);
+						returnVector->emplace_back(p, x, y + 2 );
 					}
 				}
 				if (y + 1 <= 7 && piecePositions[x][y + 1]->getType() == PieceType::Empty) {
-					returnVector->emplace_back( x, y + 1 );
+					returnVector->emplace_back(p,  x, y + 1 );
 				}
 				if (y + 1 <= 7 && x + 1 <= 7 && piecePositions[x + 1][y + 1]->getType() != PieceType::Empty && piecePositions[x + 1][y + 1]->getTeam() == opponent) {
-					returnVector->emplace_back( x + 1, y + 1 );
+					returnVector->emplace_back(p,  x + 1, y + 1 );
 				}
 				if (y + 1 <= 7 && x - 1 >= 0 && piecePositions[x - 1][y + 1]->getType() != PieceType::Empty && piecePositions[x - 1][y + 1]->getTeam() == opponent ) {
-					returnVector->emplace_back( x - 1, y + 1 );
+					returnVector->emplace_back(p,  x - 1, y + 1 );
 				}
 				struct enPassant ep = p->getEnPassant();
 				if (ep.valid == true) {
-					returnVector->emplace_back(ep.x, ep.y);
+					returnVector->emplace_back(p, ep.x, ep.y);
 				}
 			}
 			break;
@@ -58,7 +59,7 @@ public:
 			// Rook Moving Logic
 			case (PieceType::Rook):
 			{
-				getValidFileRankMoves(returnVector, opponent, { x, y });
+				getValidFileRankMoves(returnVector, opponent, piece);
 			}
 			break;
 
@@ -66,28 +67,28 @@ public:
 			case (PieceType::Knight):
 			{
 				if (x + 2 <= 7 && y + 1 <= 7 && (piecePositions[x + 2][y + 1]->getType() == PieceType::Empty || piecePositions[x + 2][y + 1]->getTeam() == opponent)) {
-					returnVector->emplace_back(x + 2, y + 1);
+					returnVector->emplace_back(piece, x + 2, y + 1);
 				}
 				if (x + 2 <= 7 && y - 1 >= 0 && (piecePositions[x + 2][y - 1]->getType() == PieceType::Empty || piecePositions[x + 2][y - 1]->getTeam() == opponent)) {
-					returnVector->emplace_back(x + 2, y - 1);
+					returnVector->emplace_back(piece, x + 2, y - 1);
 				}
 				if (x - 2 >= 0 && y + 1 <= 7 && (piecePositions[x - 2][y + 1]->getType() == PieceType::Empty || piecePositions[x - 2][y + 1]->getTeam() == opponent)) {
-					returnVector->emplace_back(x - 2, y + 1);
+					returnVector->emplace_back(piece, x - 2, y + 1);
 				}
 				if (x - 2 >= 0 && y - 1 >= 0 && (piecePositions[x - 2][y - 1]->getType() == PieceType::Empty || piecePositions[x - 2][y - 1]->getTeam() == opponent)) {
-					returnVector->emplace_back(x - 2, y - 1);
+					returnVector->emplace_back(piece, x - 2, y - 1);
 				}
 				if (x + 1 <= 7 && y + 2 <= 7 && (piecePositions[x + 1][y + 2]->getType() == PieceType::Empty || piecePositions[x + 1][y + 2]->getTeam() == opponent)) {
-					returnVector->emplace_back(x + 1, y + 2);
+					returnVector->emplace_back(piece, x + 1, y + 2);
 				}
 				if (x + 1 <= 7 && y - 2 >= 0 && (piecePositions[x + 1][y - 2]->getType() == PieceType::Empty || piecePositions[x + 1][y - 2]->getTeam() == opponent)) {
-					returnVector->emplace_back(x + 1, y - 2);
+					returnVector->emplace_back(piece, x + 1, y - 2);
 				}
 				if (x - 1 >= 0 && y + 2 <= 7 && (piecePositions[x - 1][y + 2]->getType() == PieceType::Empty || piecePositions[x - 1][y + 2]->getTeam() == opponent)) {
-					returnVector->emplace_back(x - 1, y + 2);
+					returnVector->emplace_back(piece, x - 1, y + 2);
 				}
 				if (x - 1 >= 0 && y - 2 >= 0 && (piecePositions[x - 1][y - 2]->getType() == PieceType::Empty || piecePositions[x - 1][y - 2]->getTeam() == opponent)) {
-					returnVector->emplace_back(x - 1, y - 2);
+					returnVector->emplace_back(piece, x - 1, y - 2);
 				}
 			}
 			break;
@@ -95,7 +96,7 @@ public:
 			// Bishop Moving Logic
 			case (PieceType::Bishop):
 			{
-				getValidDiagonalMoves(returnVector, opponent, {x ,y});
+				getValidDiagonalMoves(returnVector, opponent, piece);
 			}
 			break;
 
@@ -105,81 +106,81 @@ public:
 				if (x + 1 <= 7 && (piecePositions[x + 1][y]->getType() == PieceType::Empty || piecePositions[x + 1][y]->getTeam() == opponent))  {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x + 1, y), opponent)  == false) {
-							returnVector->emplace_back(x + 1, y);
+							returnVector->emplace_back(piece, x + 1, y);
 						}
 					}
 					else {
-						returnVector->emplace_back(x + 1, y);
+						returnVector->emplace_back(piece, x + 1, y);
 					}
 				}
 				if (x - 1 >= 0 && (piecePositions[x - 1][y]->getType() == PieceType::Empty || piecePositions[x - 1][y]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x - 1, y), opponent) == false) {
-							returnVector->emplace_back(x - 1, y);
+							returnVector->emplace_back(piece, x - 1, y);
 						}
 					}
 					else {
-						returnVector->emplace_back(x - 1, y);
+						returnVector->emplace_back(piece, x - 1, y);
 					}
 				}
 				if (y + 1 <= 7 && (piecePositions[x][y + 1]->getType() == PieceType::Empty || piecePositions[x][y + 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x, y + 1), opponent) == false) {
-							returnVector->emplace_back(x, y + 1);
+							returnVector->emplace_back(piece, x, y + 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x, y + 1);
+						returnVector->emplace_back(piece, x, y + 1);
 					}
 				}
 				if (y - 1 >= 0 && (piecePositions[x][y - 1]->getType() == PieceType::Empty || piecePositions[x][y - 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x, y - 1), opponent) == false) {
-							returnVector->emplace_back(x, y - 1);
+							returnVector->emplace_back(piece, x, y - 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x, y - 1);
+						returnVector->emplace_back(piece, x, y - 1);
 					}
 				}
 				if (x + 1 <= 7 && y + 1 <= 7 && (piecePositions[x + 1][y + 1]->getType() == PieceType::Empty || piecePositions[x + 1][y + 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x + 1, y + 1), opponent) == false) {
-							returnVector->emplace_back(x + 1, y + 1);
+							returnVector->emplace_back(piece, x + 1, y + 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x + 1, y + 1);
+						returnVector->emplace_back(piece, x + 1, y + 1);
 					}
 				}
 				if (x + 1 <= 7 && y - 1 >= 0 && (piecePositions[x + 1][y - 1]->getType() == PieceType::Empty || piecePositions[x + 1][y - 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x + 1, y - 1), opponent) == false) {
-							returnVector->emplace_back(x + 1, y - 1);
+							returnVector->emplace_back(piece, x + 1, y - 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x + 1, y - 1);
+						returnVector->emplace_back(piece, x + 1, y - 1);
 					}
 				}
-				if (x - 1 <= 7 && y + 1 >= 0 && (piecePositions[x - 1][y + 1]->getType() == PieceType::Empty || piecePositions[x - 1][y + 1]->getTeam() == opponent)) {
+				if (x - 1 >= 0 && y + 1 <= 7 && (piecePositions[x - 1][y + 1]->getType() == PieceType::Empty || piecePositions[x - 1][y + 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x - 1, y + 1), opponent) == false) {
-							returnVector->emplace_back(x - 1, y + 1);
+							returnVector->emplace_back(piece, x - 1, y + 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x - 1, y + 1);
+						returnVector->emplace_back(piece, x - 1, y + 1);
 					}
 				}
 				if (x - 1 >= 0 && y - 1 >= 0 && (piecePositions[x - 1][y - 1]->getType() == PieceType::Empty || piecePositions[x - 1][y - 1]->getTeam() == opponent)) {
 					if (directKingCheck) {
 						if (checkForCheck(struct location(x - 1, y - 1), opponent) == false) {
-							returnVector->emplace_back(x - 1, y - 1);
+							returnVector->emplace_back(piece, x - 1, y - 1);
 						}
 					}
 					else {
-						returnVector->emplace_back(x - 1, y - 1);
+						returnVector->emplace_back(piece, x - 1, y - 1);
 					}
 				}
 			}
@@ -187,8 +188,8 @@ public:
 
 			case (PieceType::Queen):
 			{
-				getValidDiagonalMoves(returnVector, opponent, { x, y });
-				getValidFileRankMoves(returnVector, opponent, { x, y });
+				getValidDiagonalMoves(returnVector, opponent, piece);
+				getValidFileRankMoves(returnVector, opponent, piece);
 			}
 			break;
 		}
@@ -197,9 +198,9 @@ public:
 
 
 	bool checkForCheck(struct location loc, Teams team) {
-		std::vector<struct location>* allValidMoves = getAllValidMoves(team);
+		std::vector<struct moveOption>* allValidMoves = getAllValidMoves(team);
 		for (int i = 0; i < allValidMoves->size(); i++) {
-			if (loc.x == allValidMoves->at(i).x && loc.y == allValidMoves->at(i).y) {
+			if (loc.x == allValidMoves->at(i).destX && loc.y == allValidMoves->at(i).destY) {
 				return true;
 			}
 		}
@@ -207,12 +208,12 @@ public:
 	}
 
 
-	std::vector<struct location>* getAllValidMoves(Teams team) {
-		std::vector<struct location>* allValidMoves = new std::vector<struct location>;
+	std::vector<struct moveOption>* getAllValidMoves(Teams team) {
+		std::vector<struct moveOption>* allValidMoves = new std::vector<struct moveOption>;
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (piecePositions[i][j]->getTeam() == team) {
-					std::vector<struct location>* currValidMoves = getValidMoves(piecePositions[i][j], false);
+					std::vector<struct moveOption>* currValidMoves = getValidMoves(piecePositions[i][j], false);
 					allValidMoves->insert(allValidMoves->end(), currValidMoves->begin(), currValidMoves->end());
 				}
 			}
@@ -226,14 +227,15 @@ public:
 	}
 
 
-	void getValidDiagonalMoves(std::vector<struct location>* returnVector, Teams opponent, struct location loc) {
+	void getValidDiagonalMoves(std::vector<struct moveOption>* returnVector, Teams opponent, Piece* piece) {
 		bool scanPosXPosY = true;
 		bool scanPosXNegY = true;
 		bool scanNegXPosY = true;
 		bool scanNegXNegY = true;
 
-		int x = loc.x;
-		int y = loc.y;
+		std::tuple<int, int> loc = piece->getLocation();
+		int x = std::get<0>(loc);
+		int y = std::get<1>(loc);
 
 
 		for (int i = 1; i < 8; i++) {
@@ -242,12 +244,12 @@ public:
 			if (scanPosXPosY && x + i <= 7 && y + i <= 7) {
 				if (piecePositions[x + i][y + i]->getType() != PieceType::Empty) {
 					if (piecePositions[x + i][y + i]->getTeam() == opponent) {
-						returnVector->emplace_back(x + i, y + i);
+						returnVector->emplace_back(piece, x + i, y + i);
 					}
 					scanPosXPosY = false;
 				}
 				else {
-					returnVector->emplace_back(x + i, y + i);
+					returnVector->emplace_back(piece, x + i, y + i);
 				}
 			}
 			else { scanPosXPosY = false; }
@@ -256,12 +258,12 @@ public:
 			if (scanPosXNegY && x + i <= 7 && y - i >= 0) {
 				if (piecePositions[x + i][y - i]->getType() != PieceType::Empty) {
 					if (piecePositions[x + i][y - i]->getTeam() == opponent) {
-						returnVector->emplace_back(x + i, y - i);
+						returnVector->emplace_back(piece, x + i, y - i);
 					}
 					scanPosXNegY = false;
 				}
 				else {
-					returnVector->emplace_back(x + i, y - i);
+					returnVector->emplace_back(piece, x + i, y - i);
 				}
 			}
 			else { scanPosXNegY = false; }
@@ -270,12 +272,12 @@ public:
 			if (scanNegXPosY && x - i >= 0 && y + i <= 7) {
 				if (piecePositions[x - i][y + i]->getType() != PieceType::Empty) {
 					if (piecePositions[x - i][y + i]->getTeam() == opponent) {
-						returnVector->emplace_back(x - i, y + i);
+						returnVector->emplace_back(piece, x - i, y + i);
 					}
 					scanNegXPosY = false;
 				}
 				else {
-					returnVector->emplace_back(x - i, y + i);
+					returnVector->emplace_back(piece, x - i, y + i);
 				}
 			}
 			else { scanNegXPosY = false; }
@@ -284,13 +286,13 @@ public:
 			if (scanNegXNegY && x - i >= 0 && y - i >= 0) {
 				if (piecePositions[x - i][y - i]->getType() != PieceType::Empty) {
 					if (piecePositions[x - i][y - i]->getTeam() == opponent) {
-						returnVector->emplace_back(x - i, y - i);
+						returnVector->emplace_back(piece, x - i, y - i);
 					}
 					scanNegXNegY = false;
 
 				}
 				else {
-					returnVector->emplace_back(x - i, y - i);
+					returnVector->emplace_back(piece, x - i, y - i);
 				}
 			}
 			else { scanNegXNegY = false; }
@@ -299,14 +301,15 @@ public:
 	}
 
 
-	void getValidFileRankMoves(std::vector<struct location>* returnVector, Teams opponent, struct location loc) {
+	void getValidFileRankMoves(std::vector<struct moveOption>* returnVector, Teams opponent, Piece* piece) {
 		bool scanPosX = true;
 		bool scanNegX = true;
 		bool scanPosY = true;
 		bool scanNegY = true;
 
-		int x = loc.x;
-		int y = loc.y;
+		std::tuple<int, int> loc = piece->getLocation();
+		int x = std::get<0>(loc);
+		int y = std::get<1>(loc);
 
 		for (int i = 1; i < 8; i++) {
 
@@ -314,12 +317,12 @@ public:
 			if (scanPosX && x + i <= 7) {
 				if (piecePositions[x + i][y]->getType() != PieceType::Empty) {
 					if (piecePositions[x + i][y]->getTeam() == opponent) {
-						returnVector->emplace_back(x + i, y);
+						returnVector->emplace_back(piece, x + i, y);
 					}
 					scanPosX = false;
 				}
 				else {
-					returnVector->emplace_back(x + i, y);
+					returnVector->emplace_back(piece, x + i, y);
 				}
 			}
 			else { scanPosX = false; }
@@ -328,12 +331,12 @@ public:
 			if (scanNegX && x - i >= 0) {
 				if (piecePositions[x - i][y]->getType() != PieceType::Empty) {
 					if (piecePositions[x - i][y]->getTeam() == opponent) {
-						returnVector->emplace_back(x - i, y);
+						returnVector->emplace_back(piece, x - i, y);
 					}
 					scanNegX = false;
 				}
 				else {
-					returnVector->emplace_back(x - i, y);
+					returnVector->emplace_back(piece, x - i, y);
 				}
 			}
 			else { scanNegX = false; }
@@ -342,12 +345,12 @@ public:
 			if (scanPosY && y + i <= 7) {
 				if (piecePositions[x][y + i]->getType() != PieceType::Empty) {
 					if (piecePositions[x][y + i]->getTeam() == opponent) {
-						returnVector->emplace_back(x, y + i);
+						returnVector->emplace_back(piece, x, y + i);
 					}
 					scanPosY = false;
 				}
 				else {
-					returnVector->emplace_back(x, y + i);
+					returnVector->emplace_back(piece, x, y + i);
 				}
 			}
 			else { scanPosY = false; }
@@ -356,13 +359,13 @@ public:
 			if (scanNegY && y - i >= 0) {
 				if (piecePositions[x][y - i]->getType() != PieceType::Empty) {
 					if (piecePositions[x][y - i]->getTeam() == opponent) {
-						returnVector->emplace_back(x, y - i);
+						returnVector->emplace_back(piece, x, y - i);
 					}
 					scanNegY = false;
 
 				}
 				else {
-					returnVector->emplace_back(x, y - i);
+					returnVector->emplace_back(piece, x, y - i);
 				}
 			}
 			else { scanNegY = false; }
@@ -388,6 +391,14 @@ public:
 		}
 		string.append("+ - - - - - - - -+");
 		return string;
+	}
+
+	void movePiece(Piece* piece, struct location destination ) {
+		delete piecePositions[destination.x][destination.y];
+		piecePositions[destination.x][destination.y] = piece;
+		std::tuple<int, int> previousPosition = piece->getLocation();
+		piece->setLocation(destination.x, destination.y);
+		piecePositions[std::get<0>(previousPosition)][std::get<1>(previousPosition)] = new Blank(previousPosition);
 	}
 
 private:

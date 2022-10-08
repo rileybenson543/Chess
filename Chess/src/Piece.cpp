@@ -6,6 +6,10 @@ Piece::~Piece() {}
 std::tuple<int, int> Piece::getLocation() {
 	return {x,y};
 }
+void Piece::setLocation(int _x, int _y) {
+	x = _x;
+	y = _y;
+}
 PieceType Piece::getType() {
 	return PieceType::Empty;
 }
